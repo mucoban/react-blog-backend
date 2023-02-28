@@ -1,16 +1,34 @@
 const router = require("express").Router()
 const jwt = require("jsonwebtoken")
+const crypto = require("crypto")
+const UserModel = require("../models/user.model")
 
-router.route('/login').get((req, res) => {
-    const payload = { userId: 1 }
-    token = jwt.sign(payload, '0pRRcYp514z7Cro1QO57sEakfdfKKLBNQsamdaDqKXlqa8oqiVrxSf9iQu00tBYE', {
-        expiresIn: 60 * 60
-    })
+router.route('/login').post((req, res) => {
+    const { username } = req.body
 
-    res.json({
-        status: 'success',
-        token: token
-    })
+    UserModel.find({ username: username })
+        .then(user => {
+            if (user && user[0]) {
+                const { password } = req.body
+                const md5Password = crypto.createHash('md5').update(password).digest('hex')
+
+                if (user[0].password === md5Password) {
+                    const payload = { userId: user._id }
+                    token = jwt.sign(payload, '0pRRcYp514z7Cro1QO57sEakfdfKKLBNQsamdaDqKXlqa8oqiVrxSf9iQu00tBYE',
+                    { expiresIn: 60 * 60 })
+
+                    user[0].token = token
+                    user[0].save().then().catch(error => res.status(400).json('error: ' + error))
+
+                    res.json({ status: 'success', token: token })
+                } else {
+                    res.status(400).json({ status: 'error', message: 'username or password is wrong - 1' })
+                }
+            } else {
+                res.status(400).json({ status: 'error', message: 'username or password is wrong - 2' })
+            }
+        })
+        .catch(error => res.status(400).json('error: ' + error))
 })
 
 module.exports = router
