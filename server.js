@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
 const { connection } = mongoose
+const {checkUserAuthentication} = require("./controllers/auth.controller");
 
 require('dotenv').config()
 
@@ -18,5 +19,6 @@ connection.once('open', () => { console.log('Mongodb established') })
 const authRouter = require('./routes/auth')
 app.use(authRouter)
 
+app.get('/', checkUserAuthentication, (req, res) => { res.json('test') })
+
 app.listen(port, () => { console.log('connection established on port ' + port) })
-//test commit 2

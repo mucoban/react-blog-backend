@@ -13,8 +13,8 @@ router.route('/login').post((req, res) => {
                 const md5Password = crypto.createHash('md5').update(password).digest('hex')
 
                 if (user[0].password === md5Password) {
-                    const payload = { userId: user._id }
-                    token = jwt.sign(payload, '0pRRcYp514z7Cro1QO57sEakfdfKKLBNQsamdaDqKXlqa8oqiVrxSf9iQu00tBYE',
+                    const payload = { userId: user[0]._id }
+                    const token = jwt.sign(payload, process.env.TOKEN_SECRET,
                     { expiresIn: 60 * 60 })
 
                     user[0].token = token
